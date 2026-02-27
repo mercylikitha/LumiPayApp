@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LumiPay — Next-Gen P2P</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@400;600;700;800&display=swap');
+  :root{--bg:#020d0e;--surface:#041214;--card:#071a1c;--border:rgba(0,200,180,0.15);--accent:#00c8b4;--accent2:#00efd8;--accent3:#00a896;--accent4:#7fffd4;--teal-deep:#006d6b;--text:#dffaf7;--muted:#4d8a86;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 20% 10%,rgba(0,200,180,0.14) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 80% 80%,rgba(0,239,216,0.10) 0%,transparent 60%),radial-gradient(ellipse 40% 40% at 50% 50%,rgba(0,168,150,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
+  .wrapper{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:24px 20px 60px;}
+
+  /* Header */
+  .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;}
+  .logo-wrap{display:flex;align-items:center;gap:10px;}
+  .logo{font-size:20px;font-weight:800;letter-spacing:-0.5px;font-family:'Outfit',sans-serif;background:linear-gradient(135deg,var(--accent2) 0%,var(--accent4) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;}
+  .logo-sub{color:var(--muted);font-weight:400;font-size:10px;display:block;letter-spacing:3px;text-transform:uppercase;margin-top:1px;-webkit-text-fill-color:var(--muted);}
+  .avatar-chip{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:6px 14px 6px 6px;cursor:pointer;transition:border-color .2s;}
+  .avatar-chip:hover{border-color:var(--accent);}
+  .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--teal-deep));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+  .avatar-name{font-size:13px;font-weight:600;}
+
+  /* Balance card */
+  .balance-card{background:linear-gradient(135deg,#041a1c 0%,#032020 100%);border:1px solid var(--border);border-radius:24px;padding:28px;margin-bottom:24px;position:relative;overflow:hidden;}
+  .balance-card::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(0,200,180,0.25) 0%,transparent 70%);}
+  .balance-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+  .balance-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .balance-amount{font-size:44px;font-weight:800;letter-spacing:-2px;line-height:1;flex:1;}
+  .balance-amount sup{font-size:20px;vertical-align:super;font-weight:400;}
+  .currency-btn{display:flex;align-items:center;gap:6px;background:rgba(0,200,180,0.12);border:1px solid rgba(0,200,180,0.3);border-radius:100px;padding:6px 12px;cursor:pointer;transition:all .2s;margin-top:4px;flex-shrink:0;}
+  .currency-btn:hover{background:rgba(0,200,180,0.22);border-color:var(--accent2);}
+  .currency-flag{font-size:16px;}
+  .currency-code{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--accent);}
+  .currency-arrow{font-size:10px;color:var(--muted);}
+  .balance-sub{font-size:12px;color:var(--muted);margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .badge-up{background:rgba(0,240,200,0.15);color:var(--accent2);border-radius:100px;padding:2px 8px;font-size:11px;font-family:'DM Mono',monospace;}
+  .id-token{margin-top:20px;padding:12px 14px;background:rgba(0,0,0,0.3);border-radius:12px;border:1px solid rgba(0,200,180,0.2);display:flex;align-items:center;justify-content:space-between;}
+  .id-token-label{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+  .id-token-val{font-family:'DM Mono',monospace;font-size:13px;color:var(--accent);letter-spacing:1px;}
+  .id-pulse{width:8px;height:8px;border-radius:50%;background:var(--accent2);box-shadow:0 0 8px var(--accent2);animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+
+  .section-title{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+
+  /* Methods */
+  .methods-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;}
+  .method-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden;}
+  .method-card:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,200,180,0.18);}
+  .method-card.active{border-color:var(--accent2);background:linear-gradient(135deg,rgba(0,200,180,0.15),rgba(0,239,216,0.05));box-shadow:0 0 24px rgba(0,200,180,0.2);}
+  .method-card.active::before{content:'✓';position:absolute;top:10px;right:12px;font-size:11px;color:var(--accent2);}
+  .method-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px;}
+  .method-icon.prox{background:rgba(0,200,180,0.15);}
+  .method-icon.nfc{background:rgba(0,239,216,0.12);}
+  .method-icon.face{background:rgba(0,168,150,0.15);}
+  .method-icon.token{background:rgba(127,255,212,0.10);}
+  .method-name{font-size:14px;font-weight:700;margin-bottom:4px;}
+  .method-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+  .method-tag{display:inline-block;margin-top:8px;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:100px;font-family:'DM Mono',monospace;}
+  .tag-prox{background:rgba(0,200,180,0.15);color:var(--accent2);}
+  .tag-nfc{background:rgba(0,239,216,0.12);color:var(--accent4);}
+  .tag-face{background:rgba(0,168,150,0.15);color:var(--accent3);}
+  .tag-token{background:rgba(127,255,212,0.12);color:var(--accent4);}
+
+  /* Transfer panel */
+  .transfer-panel{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:24px;margin-bottom:24px;}
+  .transfer-panel-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .panel-badge{font-size:10px;letter-spacing:2px;text-transform:uppercase;background:rgba(0,200,180,0.15);color:var(--accent2);border-radius:100px;padding:3px 10px;font-family:'DM Mono',monospace;}
+
+  /* Currency row */
+  .currency-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:12px;background:rgba(0,0,0,0.25);border-radius:14px;border:1px solid var(--border);}
+  .cur-side{flex:1;min-width:0;}
+  .cur-side-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+  .cur-picker{display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border-radius:10px;border:1px solid var(--border);background:rgba(0,200,180,0.06);transition:all .2s;}
+  .cur-picker:hover{border-color:var(--accent2);background:rgba(0,200,180,0.14);}
+  .cur-picker-flag{font-size:18px;flex-shrink:0;}
+  .cur-picker-code{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;}
+  .cur-picker-name{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cur-arrow-mid{font-size:16px;color:var(--muted);flex-shrink:0;transition:color .3s;}
+  .cur-arrow-mid.cross{color:#f0a500;}
+  .cross-badge{display:none;text-align:center;margin-bottom:10px;}
+  .cross-badge.show{display:block;}
+  .cross-tag{font-size:9px;letter-spacing:1.5px;background:rgba(255,180,0,0.12);color:#f0a500;border-radius:100px;padding:3px 10px;font-family:'DM Mono',monospace;}
+
+  /* Prox vis */
+  .proximity-vis{position:relative;height:120px;display:flex;align-items:center;justify-content:center;margin:0 0 12px;}
+  .prox-ring{position:absolute;border-radius:50%;border:1px solid rgba(0,200,180,0.25);animation:expand 2.5s ease-out infinite;}
+  .prox-ring:nth-child(1){width:60px;height:60px;animation-delay:0s;}
+  .prox-ring:nth-child(2){width:100px;height:100px;animation-delay:.6s;}
+  .prox-ring:nth-child(3){width:140px;height:140px;animation-delay:1.2s;}
+  .prox-ring:nth-child(4){width:180px;height:180px;animation-delay:1.8s;}
+  @keyframes expand{0%{opacity:.8;border-color:rgba(0,200,180,0.6)}100%{opacity:0;border-color:rgba(0,200,180,0)}}
+  .prox-center{z-index:2;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--teal-deep));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 28px rgba(0,200,180,0.5);}
+
+  /* Amount */
+  .amount-input-wrap{text-align:center;margin-bottom:2px;}
+  .amount-display{font-size:46px;font-weight:800;letter-spacing:-2px;outline:none;border:none;background:transparent;color:var(--text);text-align:center;width:100%;}
+  .amount-hint{font-size:12px;color:var(--muted);text-align:center;margin-bottom:12px;}
+
+  /* Tariff box */
+  .tariff-box{background:rgba(255,160,0,0.05);border:1px solid rgba(255,160,0,0.18);border-radius:14px;padding:12px 16px;margin-bottom:12px;display:none;animation:fadeIn .3s ease;}
+  .tariff-box.show{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+  .tariff-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#f0a500;margin-bottom:8px;}
+  .tariff-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;font-size:12px;}
+  .tariff-row.total{margin-bottom:0;border-top:1px solid rgba(255,160,0,0.15);padding-top:6px;margin-top:4px;font-weight:700;font-size:13px;}
+  .tariff-label{color:var(--muted);}
+  .tariff-val{font-family:'DM Mono',monospace;}
+  .tariff-val.red{color:#f0a500;}
+  .tariff-val.green{color:var(--accent2);}
+
+  /* Numpad */
+  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+  .num-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:14px;font-size:18px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif;}
+  .num-btn:hover{background:rgba(0,200,180,0.12);border-color:var(--accent2);}
+  .num-btn:active{transform:scale(.95);}
+  .num-btn.del{color:var(--muted);}
+
+  /* CTA */
+  .cta-btn{width:100%;padding:18px;border-radius:18px;border:none;background:linear-gradient(135deg,var(--accent2) 0%,var(--teal-deep) 100%);color:#fff;font-size:16px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;position:relative;overflow:hidden;transition:all .2s;letter-spacing:.5px;}
+  .cta-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);}
+  .cta-btn:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(0,200,180,0.4);}
+  .cta-btn:active{transform:scale(.98);}
+
+  /* Txns */
+  .txn-list{display:flex;flex-direction:column;gap:10px;}
+  .txn-item{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 16px;transition:border-color .2s;}
+  .txn-item:hover{border-color:rgba(0,200,180,0.25);}
+  .txn-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .txn-info{flex:1;}
+  .txn-name{font-size:14px;font-weight:600;margin-bottom:2px;}
+  .txn-method{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+  .txn-dot{width:5px;height:5px;border-radius:50%;}
+  .txn-amount{text-align:right;}
+  .txn-val{font-size:15px;font-weight:700;}
+  .txn-val.out{color:var(--text);}
+  .txn-val.in{color:var(--accent2);}
+  .txn-tariff{font-size:10px;color:#f0a500;font-family:'DM Mono',monospace;margin-top:1px;}
+  .txn-time{font-size:11px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace;}
+
+  /* Security */
+  .security-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:14px;background:rgba(0,200,180,0.05);border:1px solid rgba(0,200,180,0.12);margin-top:24px;font-size:11px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+  .sec-dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);box-shadow:0 0 6px var(--accent2);animation:pulse 1.5s infinite;}
+
+  /* ── CURRENCY MODAL ── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(4,4,9,0.88);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);}
+  .modal-overlay.show{display:flex;}
+  .modal-sheet{background:#071a1c;border:1px solid var(--border);border-top:1px solid rgba(0,200,180,0.25);border-radius:28px 28px 0 0;width:100%;max-width:480px;padding:24px 24px 44px;position:relative;animation:slideUp .3s cubic-bezier(.175,.885,.32,1.275);}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .modal-handle{width:40px;height:4px;background:rgba(255,255,255,0.1);border-radius:100px;margin:0 auto 20px;}
+  .modal-title{font-size:18px;font-weight:800;margin-bottom:4px;}
+  .modal-sub{font-size:12px;color:var(--muted);margin-bottom:18px;}
+  .modal-close{position:absolute;top:16px;right:20px;background:rgba(255,255,255,0.06);border:none;color:var(--muted);font-size:16px;cursor:pointer;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+  .modal-close:hover{background:rgba(0,200,180,0.15);color:var(--accent2);}
+  .currency-search{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;margin-bottom:14px;transition:border-color .2s;}
+  .currency-search:focus{border-color:var(--accent2);}
+  .currency-search::placeholder{color:var(--muted);}
+  .currency-list{display:flex;flex-direction:column;gap:4px;max-height:360px;overflow-y:auto;}
+  .currency-list::-webkit-scrollbar{width:4px;}
+  .currency-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:100px;}
+  .cur-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid transparent;cursor:pointer;transition:all .15s;}
+  .cur-item:hover{background:rgba(0,200,180,0.08);border-color:var(--border);}
+  .cur-item.selected{background:rgba(0,200,180,0.12);border-color:var(--accent2);}
+  .cur-item-flag{font-size:22px;width:32px;text-align:center;flex-shrink:0;}
+  .cur-item-info{flex:1;min-width:0;}
+  .cur-item-code{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;}
+  .cur-item-name{font-size:11px;color:var(--muted);}
+  .cur-item-rate{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);text-align:right;flex-shrink:0;}
+  .cur-item-check{color:var(--accent2);font-size:14px;margin-left:4px;}
+
+  /* Overlays */
+  .nfc-overlay{display:none;position:fixed;inset:0;background:rgba(4,4,9,0.95);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:24px;}
+  .nfc-overlay.show{display:flex;}
+  .nfc-icon{font-size:80px;animation:nfcPulse 1.2s ease-in-out infinite;}
+  @keyframes nfcPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+  .nfc-ring{position:absolute;border-radius:50%;border:2px solid var(--accent4);animation:nfcRing 2s ease-out infinite;}
+  .nfc-ring:nth-child(1){width:120px;height:120px;animation-delay:0s}
+  .nfc-ring:nth-child(2){width:200px;height:200px;animation-delay:.5s}
+  .nfc-ring:nth-child(3){width:280px;height:280px;animation-delay:1s}
+  @keyframes nfcRing{0%{opacity:.6;transform:scale(.6)}100%{opacity:0;transform:scale(1)}}
+  .ov-title{font-size:20px;font-weight:700;text-align:center;}
+  .ov-sub{font-size:14px;color:var(--muted);text-align:center;}
+  .ov-cancel{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;padding:10px 24px;border-radius:100px;cursor:pointer;margin-top:8px;}
+
+  /* ── FACE / CAMERA OVERLAY ── */
+  .face-overlay{display:none;position:fixed;inset:0;background:#000;z-index:100;flex-direction:column;align-items:center;justify-content:center;}
+  .face-overlay.show{display:flex;}
+
+  /* live camera feed fills the whole screen */
+  #cameraVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);} /* mirror for selfie */
+
+  /* dark vignette around edges */
+  .cam-vignette{position:absolute;inset:0;background:radial-gradient(ellipse 70% 80% at 50% 50%,transparent 40%,rgba(4,4,9,0.85) 100%);pointer-events:none;z-index:1;}
+
+  /* face guide oval */
+  .cam-oval-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2;pointer-events:none;}
+  .cam-oval{width:220px;height:290px;border-radius:50%;border:2px solid var(--accent2);box-shadow:0 0 0 9999px rgba(2,13,14,0.6),0 0 40px rgba(0,200,180,0.4);animation:ovalGlow 2s ease-in-out infinite;position:relative;overflow:hidden;}
+  @keyframes ovalGlow{0%,100%{border-color:rgba(0,200,180,0.6);box-shadow:0 0 0 9999px rgba(2,13,14,0.6),0 0 20px rgba(0,200,180,0.3)}50%{border-color:var(--accent2);box-shadow:0 0 0 9999px rgba(2,13,14,0.6),0 0 50px rgba(0,200,180,0.7)}}
+  @keyframes rejectShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+  .cam-scanline{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,rgba(0,239,216,0.8) 30%,rgba(0,239,216,1) 50%,rgba(0,239,216,0.8) 70%,transparent 100%);filter:blur(1px);animation:camScan 2.2s ease-in-out infinite;}
+  @keyframes camScan{0%{top:-3px;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+
+  /* corner brackets */
+  .cam-corner{position:absolute;width:22px;height:22px;z-index:3;}
+  .cam-corner.tl{top:16px;left:16px;border-top:2px solid var(--accent4);border-left:2px solid var(--accent4);}
+  .cam-corner.tr{top:16px;right:16px;border-top:2px solid var(--accent4);border-right:2px solid var(--accent4);}
+  .cam-corner.bl{bottom:16px;left:16px;border-bottom:2px solid var(--accent4);border-left:2px solid var(--accent4);}
+  .cam-corner.br{bottom:16px;right:16px;border-bottom:2px solid var(--accent4);border-right:2px solid var(--accent4);}
+
+  /* mesh dots overlay inside oval */
+  .cam-mesh{position:absolute;inset:0;display:grid;grid-template-columns:repeat(10,1fr);grid-template-rows:repeat(13,1fr);gap:1px;padding:14px;pointer-events:none;}
+  .cam-mesh-dot{width:3px;height:3px;border-radius:50%;background:rgba(0,239,216,0.3);animation:meshFade 1.8s ease-in-out infinite;}
+  .cam-mesh-dot:nth-child(odd){animation-delay:.4s;}
+  .cam-mesh-dot:nth-child(3n){animation-delay:.9s;}
+  @keyframes meshFade{0%,100%{opacity:.15}50%{opacity:.7}}
+
+  /* status bar at bottom */
+  .cam-ui{position:absolute;bottom:0;left:0;right:0;z-index:4;padding:0 24px 48px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+  .cam-status-pill{background:rgba(2,18,20,0.88);border:1px solid rgba(0,200,180,0.3);border-radius:100px;padding:8px 20px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);backdrop-filter:blur(12px);}
+  .cam-status-pill.success{color:var(--accent4);border-color:rgba(127,255,212,0.5);}
+  .cam-status-pill.rejected{color:#ff2255;border-color:rgba(255,34,85,0.6);background:rgba(255,34,85,0.12);animation:rejectShake .4s ease;}
+  .cam-badge-row{display:flex;gap:10px;align-items:center;}
+  .cam-badge{background:rgba(10,10,20,0.75);border:1px solid var(--border);border-radius:10px;padding:6px 12px;font-size:11px;font-family:'DM Mono',monospace;color:var(--muted);backdrop-filter:blur(8px);}
+  .cam-cancel-btn{background:rgba(10,10,20,0.8);border:1px solid var(--border);color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;padding:11px 28px;border-radius:100px;cursor:pointer;backdrop-filter:blur(10px);transition:all .2s;}
+  .cam-cancel-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+
+  /* header label */
+  .cam-header{position:absolute;top:0;left:0;right:0;z-index:4;padding:48px 24px 0;display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .cam-title{font-size:18px;font-weight:800;text-shadow:0 2px 12px rgba(0,0,0,0.8);}
+  .cam-sub{font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:1px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+
+  /* permission denied state */
+  .cam-denied{display:none;flex-direction:column;align-items:center;gap:16px;text-align:center;z-index:5;padding:40px;}
+  .cam-denied.show{display:flex;}
+  .cam-denied-icon{font-size:56px;}
+  .cam-denied-title{font-size:18px;font-weight:700;}
+  .cam-denied-sub{font-size:13px;color:var(--muted);line-height:1.6;max-width:280px;}
+
+  /* ── RECIPIENT MODAL ── */
+  .recip-modal{position:fixed;inset:0;background:rgba(4,4,9,0.92);z-index:300;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(10px);}
+  .recip-modal.show{display:flex;}
+  .recip-sheet{background:#071a1c;border:1px solid var(--border);border-top:1px solid rgba(0,200,180,0.3);border-radius:28px 28px 0 0;width:100%;max-width:480px;padding:24px 24px 48px;animation:slideUp .3s cubic-bezier(.175,.885,.32,1.275);}
+  .recip-handle{width:40px;height:4px;background:rgba(255,255,255,0.1);border-radius:100px;margin:0 auto 20px;}
+  .recip-title{font-size:18px;font-weight:800;margin-bottom:4px;}
+  .recip-sub{font-size:12px;color:var(--muted);margin-bottom:18px;}
+  .recip-search{width:100%;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;outline:none;margin-bottom:14px;transition:border-color .2s;}
+  .recip-search:focus{border-color:var(--accent2);}
+  .recip-search::placeholder{color:var(--muted);}
+  .recip-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;}
+  .recip-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid transparent;cursor:pointer;transition:all .15s;}
+  .recip-item:hover{background:rgba(0,200,180,0.08);border-color:var(--border);}
+  .recip-item.selected{background:rgba(0,200,180,0.14);border-color:var(--accent2);}
+  .recip-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .recip-info{flex:1;}
+  .recip-name{font-size:14px;font-weight:600;}
+  .recip-id{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+  .recip-check{color:var(--accent2);font-size:16px;}
+  .recip-confirm-btn{width:100%;margin-top:16px;padding:16px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--accent2) 0%,var(--teal-deep) 100%);color:#fff;font-size:15px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .2s;}
+  .recip-confirm-btn:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(0,200,180,0.35);}
+  .recip-confirm-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
+  .recip-cancel{width:100%;margin-top:8px;padding:12px;border-radius:16px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:14px;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .2s;}
+  .recip-cancel:hover{border-color:var(--accent2);color:var(--accent2);}
+
+  /* Live face-tracking box drawn on a canvas overlay */
+  #faceTrackCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;transform:scaleX(-1);}
+
+  /* Confidence meter */
+  .cam-confidence{width:180px;height:4px;background:rgba(255,255,255,0.1);border-radius:100px;overflow:hidden;margin-top:-6px;}
+  .cam-confidence-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent3),var(--accent2),var(--accent4));border-radius:100px;transition:width 0.3s ease;}
+
+  /* Face count badge */
+  .cam-face-badge{position:absolute;top:16px;right:16px;z-index:5;background:rgba(10,10,20,0.8);border:1px solid var(--border);border-radius:100px;padding:4px 12px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);backdrop-filter:blur(8px);transition:all .3s;}
+  .cam-face-badge.detected{border-color:rgba(0,239,216,0.4);color:var(--accent4);}
+
+  .token-overlay{display:none;position:fixed;inset:0;background:rgba(4,4,9,0.97);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+  .token-overlay.show{display:flex;}
+  .token-hex{font-family:'DM Mono',monospace;font-size:13px;color:rgba(255,180,0,0.5);letter-spacing:4px;line-height:1.8;text-align:center;animation:tokenScroll 3s linear infinite;}
+  @keyframes tokenScroll{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
+  .token-big{font-family:'DM Mono',monospace;font-size:28px;color:#ffb400;letter-spacing:6px;animation:tokenGlow 1s ease-in-out infinite alternate;}
+  @keyframes tokenGlow{from{text-shadow:0 0 10px rgba(255,180,0,0.3)}to{text-shadow:0 0 40px rgba(255,180,0,0.8)}}
+  .token-label{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+
+  /* Toast */
+  .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:linear-gradient(135deg,#041a1c,#032020);border:1px solid var(--accent2);border-radius:100px;padding:14px 28px;font-size:13px;font-weight:600;color:var(--accent2);z-index:999;transition:transform .4s cubic-bezier(.175,.885,.32,1.275);white-space:nowrap;box-shadow:0 8px 32px rgba(0,200,180,0.35);max-width:90vw;text-align:center;}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  /* ── SUCCESS POPUP ── */
+  .success-overlay{position:fixed;inset:0;background:rgba(2,13,14,0.85);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(16px);padding:24px;}
+  .success-overlay.show{display:flex;animation:fadeIn .25s ease;}
+  .success-card{background:linear-gradient(160deg,#071a1c 0%,#041214 100%);border:1px solid rgba(0,200,180,0.35);border-radius:32px;padding:40px 32px 32px;width:100%;max-width:360px;text-align:center;position:relative;overflow:hidden;box-shadow:0 32px 80px rgba(0,200,180,0.25);}
+  .success-card::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(0,239,216,0.18) 0%,transparent 70%);pointer-events:none;}
+  .success-icon-wrap{position:relative;width:80px;height:80px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;}
+  .success-ring{position:absolute;border-radius:50%;border:1.5px solid rgba(0,200,180,0.4);animation:successRing 1.8s ease-out infinite;}
+  .success-ring:nth-child(1){width:80px;height:80px;animation-delay:0s;}
+  .success-ring:nth-child(2){width:110px;height:110px;animation-delay:.3s;}
+  .success-ring:nth-child(3){width:140px;height:140px;animation-delay:.6s;}
+  @keyframes successRing{0%{opacity:.8;transform:scale(.6)}100%{opacity:0;transform:scale(1)}}
+  .success-check{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--teal-deep));display:flex;align-items:center;justify-content:center;font-size:34px;box-shadow:0 0 40px rgba(0,239,216,0.5);animation:popIn .4s cubic-bezier(.175,.885,.32,1.275) .1s both;}
+  @keyframes popIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+  .success-title{font-size:22px;font-weight:800;margin-bottom:6px;animation:slideUp2 .4s ease .2s both;}
+  .success-subtitle{font-size:13px;color:var(--muted);margin-bottom:24px;animation:slideUp2 .4s ease .3s both;}
+  @keyframes slideUp2{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .success-amount-box{background:rgba(0,200,180,0.08);border:1px solid rgba(0,200,180,0.2);border-radius:18px;padding:18px 20px;margin-bottom:20px;animation:slideUp2 .4s ease .35s both;}
+  .success-amount-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+  .success-amount-val{font-size:32px;font-weight:800;letter-spacing:-1px;color:var(--accent2);}
+  .success-recipient{font-size:13px;color:var(--muted);margin-top:4px;}
+  .success-recipient strong{color:var(--text);}
+  .success-meta{display:flex;justify-content:space-between;margin-bottom:24px;gap:8px;animation:slideUp2 .4s ease .4s both;}
+  .success-meta-item{flex:1;background:rgba(0,0,0,0.25);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center;}
+  .success-meta-key{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+  .success-meta-val{font-size:11px;font-family:'DM Mono',monospace;color:var(--accent4);}
+  .success-done-btn{width:100%;padding:16px;border-radius:16px;border:none;background:linear-gradient(135deg,var(--accent2) 0%,var(--teal-deep) 100%);color:#fff;font-size:15px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .2s;animation:slideUp2 .4s ease .45s both;}
+  .success-done-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,200,180,0.4);}
+  .success-secure-tag{margin-top:12px;font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;animation:slideUp2 .4s ease .5s both;}
+  .success-secure-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent2);box-shadow:0 0 5px var(--accent2);margin-right:5px;vertical-align:middle;}
+
+  /* ── AUTH SCREEN ── */
+  .auth-screen{position:fixed;inset:0;z-index:2000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;}
+  .auth-screen.hidden{display:none;}
+  .auth-box{width:100%;max-width:400px;}
+  .auth-logo-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:40px;}
+  .auth-logo-text{font-size:32px;font-weight:800;background:linear-gradient(135deg,var(--accent2) 0%,var(--accent4) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .auth-logo-sub{font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;-webkit-text-fill-color:var(--muted);}
+  .auth-tagline{font-size:13px;color:var(--muted);text-align:center;margin-top:4px;}
+  .auth-tabs{display:flex;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:16px;padding:4px;margin-bottom:28px;}
+  .auth-tab{flex:1;padding:12px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+  .auth-tab.active{background:linear-gradient(135deg,rgba(0,200,180,0.2),rgba(0,239,216,0.08));color:var(--accent2);border:1px solid rgba(0,200,180,0.3);box-shadow:0 4px 16px rgba(0,200,180,0.15);}
+  .auth-panel{display:none;animation:fadeIn .3s ease;}
+  .auth-panel.active{display:block;}
+  .auth-field-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:block;}
+  .auth-input-wrap{position:relative;margin-bottom:14px;}
+  .auth-input{width:100%;background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:14px;padding:14px 44px 14px 16px;color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+  .auth-input:focus{border-color:var(--accent2);background:rgba(0,0,0,0.5);}
+  .auth-input::placeholder{color:var(--muted);}
+  .auth-input.shake{animation:authShake .35s ease;}
+  @keyframes authShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}60%{transform:translateX(8px)}80%{transform:translateX(-4px)}}
+  .auth-eye{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted);cursor:pointer;user-select:none;}
+  .auth-phone-prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--accent);font-family:'DM Mono',monospace;pointer-events:none;}
+  .auth-input.with-prefix{padding-left:46px;}
+  .auth-btn{width:100%;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent2) 0%,var(--teal-deep) 100%);color:#fff;font-size:15px;font-weight:700;font-family:'Outfit',sans-serif;cursor:pointer;transition:all .2s;margin-top:4px;letter-spacing:.4px;position:relative;overflow:hidden;}
+  .auth-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);}
+  .auth-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,200,180,0.4);}
+  .auth-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+  .auth-msg{font-size:12px;min-height:18px;margin:6px 0 4px;text-align:center;}
+  .auth-msg.err{color:#ff4466;}
+  .auth-msg.ok{color:var(--accent2);}
+  .otp-label{font-size:12px;color:var(--muted);margin-bottom:14px;text-align:center;line-height:1.6;}
+  .otp-row{display:flex;gap:10px;margin-bottom:16px;}
+  .otp-digit{flex:1;background:rgba(0,0,0,0.35);border:1px solid var(--border);border-radius:12px;padding:16px 0;text-align:center;font-size:24px;font-weight:700;color:var(--text);font-family:'DM Mono',monospace;outline:none;transition:border-color .2s;width:0;}
+  .otp-digit:focus{border-color:var(--accent2);background:rgba(0,0,0,0.5);}
+  .otp-digit.shake{animation:authShake .35s ease;border-color:#ff4466;}
+  .auth-resend{font-size:12px;color:var(--muted);text-align:center;margin-bottom:14px;}
+  .auth-resend span{color:var(--accent);cursor:pointer;text-decoration:underline;}
+  .auth-secure{text-align:center;font-size:10px;color:var(--muted);margin-top:20px;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Mono',monospace;}
+  .auth-secure-dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 5px var(--accent);margin-right:5px;vertical-align:middle;}
+  .auth-step{display:none;animation:fadeIn .3s ease;}
+  .auth-step.active{display:block;}
+
+  /* ── PIN MODAL ── */
+  .pin-overlay{position:fixed;inset:0;background:rgba(2,13,14,0.92);z-index:1500;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(16px);}
+  .pin-overlay.show{display:flex;animation:fadeIn .2s ease;}
+  .pin-card{background:linear-gradient(160deg,#071a1c,#041214);border:1px solid rgba(0,200,180,0.3);border-radius:28px;padding:36px 28px 28px;width:100%;max-width:340px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.6);}
+  .pin-lock-icon{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,rgba(0,200,180,0.2),rgba(0,239,216,0.08));border:1px solid rgba(0,200,180,0.3);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;}
+  .pin-title{font-size:20px;font-weight:800;margin-bottom:4px;}
+  .pin-sub{font-size:12px;color:var(--muted);margin-bottom:22px;}
+  .pin-dots{display:flex;gap:12px;justify-content:center;margin-bottom:22px;}
+  .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:all .15s;}
+  .pin-dot.filled{background:var(--accent2);border-color:var(--accent2);box-shadow:0 0 10px rgba(0,239,216,0.5);}
+  .pin-dot.err{background:#ff4466;border-color:#ff4466;animation:authShake .35s ease;}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+  .pin-key{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:14px;padding:17px;font-size:20px;font-weight:600;color:var(--text);cursor:pointer;transition:all .15s;font-family:'Outfit',sans-serif;}
+  .pin-key:hover{background:rgba(0,200,180,0.12);border-color:var(--accent2);}
+  .pin-key:active{transform:scale(.92);}
+  .pin-key.del{color:var(--muted);font-size:15px;}
+  .pin-err-msg{font-size:12px;color:#ff4466;min-height:18px;margin-bottom:10px;}
+  .pin-cancel-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;padding:12px;border-radius:14px;cursor:pointer;transition:all .2s;width:100%;}
+  .pin-cancel-btn:hover{border-color:rgba(255,68,102,0.4);color:#ff4466;}
+
+  /* ── NFC TAP PATTERN ── */
+  .tap-overlay{position:fixed;inset:0;background:rgba(2,13,14,0.97);z-index:1500;display:none;flex-direction:column;align-items:center;justify-content:center;padding:28px;}
+  .tap-overlay.show{display:flex;animation:fadeIn .25s ease;}
+  .tap-header{text-align:center;margin-bottom:32px;}
+  .tap-title{font-size:22px;font-weight:800;margin-bottom:6px;}
+  .tap-sub{font-size:13px;color:var(--muted);line-height:1.6;}
+  .tap-pattern-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;text-align:center;}
+  .tap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;width:240px;}
+  .tap-node{width:68px;height:68px;border-radius:50%;border:2px solid var(--border);background:rgba(0,0,0,0.3);cursor:pointer;transition:all .15s;position:relative;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);user-select:none;-webkit-user-select:none;}
+  .tap-node:hover{border-color:rgba(0,200,180,0.4);background:rgba(0,200,180,0.06);}
+  .tap-node.tapped{border-color:var(--accent2);background:rgba(0,200,180,0.18);color:var(--accent2);box-shadow:0 0 18px rgba(0,239,216,0.35);}
+  .tap-node.tapped::after{content:attr(data-seq);position:absolute;top:-8px;right:-8px;width:20px;height:20px;border-radius:50%;background:var(--accent2);color:#000;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .tap-node.err-flash{border-color:#ff4466;background:rgba(255,68,102,0.15);animation:authShake .35s ease;}
+  .tap-sequence-display{display:flex;gap:8px;justify-content:center;margin-bottom:20px;min-height:28px;}
+  .tap-seq-dot{width:10px;height:10px;border-radius:50%;background:var(--accent2);box-shadow:0 0 8px rgba(0,239,216,0.6);animation:popIn .2s ease;}
+  .tap-hint{font-size:11px;color:var(--muted);text-align:center;margin-bottom:24px;font-family:'DM Mono',monospace;}
+  .tap-actions{display:flex;gap:10px;width:100%;max-width:280px;}
+  .tap-clear-btn{flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;}
+  .tap-clear-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+  .tap-confirm-btn{flex:2;padding:13px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent2),var(--teal-deep));color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+  .tap-confirm-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,200,180,0.35);}
+  .tap-confirm-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .tap-cancel-btn{width:100%;max-width:280px;margin-top:10px;padding:12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;}
+  .tap-cancel-btn:hover{border-color:rgba(255,68,102,0.4);color:#ff4466;}
+  .tap-err-msg{font-size:12px;color:#ff4466;min-height:18px;text-align:center;margin-bottom:8px;}
+  /* connector lines between tapped nodes */
+  .tap-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ AUTH SCREEN ══════════════ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-box">
+    <!-- Logo -->
+    <div class="auth-logo-wrap">
+      <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="alg1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00efd8"/><stop offset="100%" stop-color="#006d6b"/></linearGradient><linearGradient id="alg2" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7fffd4"/><stop offset="100%" stop-color="#00c8b4"/></linearGradient></defs><circle cx="16" cy="16" r="15" stroke="url(#alg1)" stroke-width="1.5" fill="rgba(0,200,180,0.08)"/><path d="M10 9 L10 22 L22 22" stroke="url(#alg2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M18 13 Q21 16 18 19" stroke="url(#alg1)" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.9"/><circle cx="10" cy="9" r="2" fill="url(#alg2)"/></svg>
+      <div class="auth-logo-text">LumiPay</div>
+      <div class="auth-logo-sub">Next-Gen Secure Payments</div>
+      <div class="auth-tagline">Send money instantly, anywhere.</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div class="auth-panel active" id="panelLogin">
+      <label class="auth-field-label">Phone Number</label>
+      <div class="auth-input-wrap">
+        <span class="auth-phone-prefix">+91</span>
+        <input class="auth-input with-prefix" id="loginPhone" type="tel" maxlength="10" placeholder="9876543210" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
+      </div>
+      <label class="auth-field-label">Password</label>
+      <div class="auth-input-wrap">
+        <input class="auth-input" id="loginPass" type="password" placeholder="Enter your password">
+        <span class="auth-eye" onclick="toggleEye('loginPass',this)">👁</span>
+      </div>
+      <div class="auth-msg err" id="loginErr"></div>
+      <button class="auth-btn" onclick="doLogin()">Login →</button>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div class="auth-panel" id="panelRegister">
+      <!-- Step 1: Details -->
+      <div class="auth-step active" id="regStep1">
+        <label class="auth-field-label">Full Name</label>
+        <div class="auth-input-wrap">
+          <input class="auth-input" id="regName" type="text" placeholder="e.g. Arjun Sharma" autocomplete="name">
+        </div>
+        <label class="auth-field-label">Phone Number</label>
+        <div class="auth-input-wrap">
+          <span class="auth-phone-prefix">+91</span>
+          <input class="auth-input with-prefix" id="regPhone" type="tel" maxlength="10" placeholder="9876543210" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
+        </div>
+        <label class="auth-field-label">Create Password</label>
+        <div class="auth-input-wrap">
+          <input class="auth-input" id="regPass" type="password" placeholder="Min 6 characters">
+          <span class="auth-eye" onclick="toggleEye('regPass',this)">👁</span>
+        </div>
+        <label class="auth-field-label">Confirm Password</label>
+        <div class="auth-input-wrap">
+          <input class="auth-input" id="regPassConf" type="password" placeholder="Re-enter password">
+          <span class="auth-eye" onclick="toggleEye('regPassConf',this)">👁</span>
+        </div>
+        <div class="auth-msg err" id="regErr1"></div>
+        <button class="auth-btn" onclick="sendOTP()">Send OTP →</button>
+      </div>
+
+      <!-- Step 2: OTP -->
+      <div class="auth-step" id="regStep2">
+        <div class="otp-label">A 6-digit OTP has been sent to<br><strong style="color:var(--accent2)" id="otpPhoneDisplay"></strong></div>
+        <div class="otp-row">
+          <input class="otp-digit" id="otp0" maxlength="1" type="tel" oninput="otpInput(this,0)">
+          <input class="otp-digit" id="otp1" maxlength="1" type="tel" oninput="otpInput(this,1)">
+          <input class="otp-digit" id="otp2" maxlength="1" type="tel" oninput="otpInput(this,2)">
+          <input class="otp-digit" id="otp3" maxlength="1" type="tel" oninput="otpInput(this,3)">
+          <input class="otp-digit" id="otp4" maxlength="1" type="tel" oninput="otpInput(this,4)">
+          <input class="otp-digit" id="otp5" maxlength="1" type="tel" oninput="otpInput(this,5)">
+        </div>
+        <div class="auth-resend">Didn't get it? <span onclick="resendOTP()">Resend OTP</span></div>
+        <div class="auth-msg err" id="regErr2"></div>
+        <button class="auth-btn" onclick="verifyOTP()">Verify & Create Account →</button>
+        <button class="auth-btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);margin-top:8px;" onclick="backToStep1()">← Back</button>
+      </div>
+    </div>
+
+    <div class="auth-secure"><span class="auth-secure-dot"></span>256-bit encrypted · No data stored</div>
+  </div>
+</div>
+
+<!-- ══════════════ PIN MODAL ══════════════ -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-card">
+    <div class="pin-lock-icon">🔐</div>
+    <div class="pin-title">Confirm Payment</div>
+    <div class="pin-sub">Enter your 4-digit transaction PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-err-msg" id="pinErrMsg"></div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key" style="visibility:hidden"></button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key del" onclick="pinDel()">⌫</button>
+    </div>
+    <button class="pin-cancel-btn" onclick="cancelPin()">Cancel Transaction</button>
+  </div>
+</div>
+
+<!-- ══════════════ NFC TAP PATTERN OVERLAY ══════════════ -->
+<div class="tap-overlay" id="tapOverlay">
+  <div class="tap-header">
+    <div style="font-size:40px;margin-bottom:12px;">📡</div>
+    <div class="tap-title">NFC Tap Authentication</div>
+    <div class="tap-sub">Draw your secret tap pattern<br>on the grid to authenticate</div>
+  </div>
+  <div class="tap-pattern-label">Tap at least 3 nodes in sequence</div>
+  <div style="position:relative;width:240px;">
+    <svg class="tap-svg" id="tapSvg" viewBox="0 0 240 240"></svg>
+    <div class="tap-grid" id="tapGrid">
+      <div class="tap-node" data-idx="0" onclick="tapNode(0)">●</div>
+      <div class="tap-node" data-idx="1" onclick="tapNode(1)">●</div>
+      <div class="tap-node" data-idx="2" onclick="tapNode(2)">●</div>
+      <div class="tap-node" data-idx="3" onclick="tapNode(3)">●</div>
+      <div class="tap-node" data-idx="4" onclick="tapNode(4)">●</div>
+      <div class="tap-node" data-idx="5" onclick="tapNode(5)">●</div>
+      <div class="tap-node" data-idx="6" onclick="tapNode(6)">●</div>
+      <div class="tap-node" data-idx="7" onclick="tapNode(7)">●</div>
+      <div class="tap-node" data-idx="8" onclick="tapNode(8)">●</div>
+    </div>
+  </div>
+  <div class="tap-sequence-display" id="tapSeqDisplay"></div>
+  <div class="tap-hint" id="tapHint">Tap nodes to build your pattern</div>
+  <div class="tap-err-msg" id="tapErrMsg"></div>
+  <div class="tap-actions">
+    <button class="tap-clear-btn" onclick="clearTapPattern()">Clear</button>
+    <button class="tap-confirm-btn" id="tapConfirmBtn" onclick="confirmTapPattern()" disabled>Confirm →</button>
+  </div>
+  <button class="tap-cancel-btn" onclick="cancelTapPattern()">Cancel Transfer</button>
+</div>
+
+<!-- CURRENCY MODAL -->
+<div class="modal-overlay" id="currencyModal" onclick="handleModalBg(event)">
+  <div class="modal-sheet" id="modalSheet">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalTitle">Your Currency</div>
+    <div class="modal-sub">Select · live rates refresh every 15 min</div>
+    <input class="currency-search" id="currencySearch" placeholder="Search by name or code…" oninput="filterCurrencies()">
+    <div class="currency-list" id="currencyList"></div>
+  </div>
+</div>
+
+<!-- NFC Overlay -->
+<div class="nfc-overlay" id="nfcOverlay">
+  <div class="nfc-ring"></div><div class="nfc-ring"></div><div class="nfc-ring"></div>
+  <div class="nfc-icon">📡</div>
+  <div class="ov-title">Hold Near Device</div>
+  <div class="ov-sub" id="nfcSubtitle">Tap another LumiPay device<br>to initiate secure transfer</div>
+  <button class="ov-cancel" onclick="closeOverlay('nfcOverlay')">Cancel</button>
+</div>
+
+<!-- Face / Camera Overlay -->
+<div class="face-overlay" id="faceOverlay">
+  <!-- Live camera video -->
+  <video id="cameraVideo" autoplay playsinline muted></video>
+
+  <!-- Face tracking canvas (draws bounding box around detected face) -->
+  <canvas id="faceTrackCanvas"></canvas>
+
+  <!-- Face count badge top-right -->
+  <div class="cam-face-badge" id="camFaceBadge">👤 Searching…</div>
+
+  <!-- Vignette -->
+  <div class="cam-vignette"></div>
+
+  <!-- Permission denied state -->
+  <div class="cam-denied" id="camDenied">
+    <div class="cam-denied-icon">🚫</div>
+    <div class="cam-denied-title">Camera Access Denied</div>
+    <div class="cam-denied-sub">Please allow camera access in your browser settings to use Face Auth.</div>
+    <button class="ov-cancel" onclick="closeFaceOverlay()">Go Back</button>
+  </div>
+
+  <!-- Header -->
+  <div class="cam-header" id="camHeader">
+    <div class="cam-title">Face Authentication</div>
+    <div class="cam-sub">Biometric · 3D Mesh · Liveness</div>
+  </div>
+
+  <!-- Oval face guide with scan animation -->
+  <div class="cam-oval-wrap" id="camOvalWrap">
+    <div class="cam-oval" id="camOval">
+      <div class="cam-scanline"></div>
+      <div class="cam-mesh" id="camMesh"></div>
+      <div class="cam-corner tl"></div>
+      <div class="cam-corner tr"></div>
+      <div class="cam-corner bl"></div>
+      <div class="cam-corner br"></div>
+    </div>
+  </div>
+
+  <!-- Bottom UI -->
+  <div class="cam-ui" id="camUI">
+    <div class="cam-badge-row">
+      <div class="cam-badge">🔒 AES-256</div>
+      <div class="cam-badge">👁 Liveness</div>
+      <div class="cam-badge">🧠 3D Mesh</div>
+    </div>
+    <div class="cam-confidence"><div class="cam-confidence-bar" id="camConfBar"></div></div>
+    <div class="cam-status-pill" id="camStatusPill">Position your face in the oval</div>
+    <button class="cam-cancel-btn" onclick="closeFaceOverlay()">Cancel</button>
+  </div>
+</div>
+
+<!-- Token Overlay -->
+<div class="token-overlay" id="tokenOverlay">
+  <div class="token-label">Generating Ephemeral Token</div>
+  <div class="token-hex">A4F2 1C9E B7D3 0548<br>91EF 6A2B D405 3C78<br>F017 8B4A E629 15DC</div>
+  <div class="token-big" id="tokenBig">AURA-7X9K</div>
+  <div style="font-size:12px;color:var(--muted);">Valid for <span id="tokenTimer" style="color:#ffb400;font-family:'DM Mono',monospace">60</span>s · Single use · Encrypted</div>
+  <button class="ov-cancel" onclick="closeOverlay('tokenOverlay')">Dismiss</button>
+</div>
+
+<!-- Toast -->
+<!-- Success Popup -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-icon-wrap">
+      <div class="success-ring"></div>
+      <div class="success-ring"></div>
+      <div class="success-ring"></div>
+      <div class="success-check">✓</div>
+    </div>
+    <div class="success-title">Payment Sent!</div>
+    <div class="success-subtitle" id="successSubtitle">Your transfer was completed securely</div>
+    <div class="success-amount-box">
+      <div class="success-amount-label">Amount Sent</div>
+      <div class="success-amount-val" id="successAmount">₹0</div>
+      <div class="success-recipient">to <strong id="successRecipient">—</strong></div>
+    </div>
+    <div class="success-meta">
+      <div class="success-meta-item">
+        <div class="success-meta-key">Method</div>
+        <div class="success-meta-val" id="successMethod">—</div>
+      </div>
+      <div class="success-meta-item">
+        <div class="success-meta-key">Status</div>
+        <div class="success-meta-val" style="color:var(--accent2)">Confirmed</div>
+      </div>
+      <div class="success-meta-item">
+        <div class="success-meta-key">Time</div>
+        <div class="success-meta-val" id="successTime">—</div>
+      </div>
+    </div>
+    <button class="success-done-btn" onclick="closeSuccessPopup()">Done</button>
+    <div class="success-secure-tag"><span class="success-secure-dot"></span>End-to-End Encrypted · Zero-Knowledge Proof</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="wrapper" id="appWrapper" style="display:none">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-wrap"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><defs><linearGradient id="lg1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#00efd8"/><stop offset="100%" stop-color="#006d6b"/></linearGradient><linearGradient id="lg2" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7fffd4"/><stop offset="100%" stop-color="#00c8b4"/></linearGradient></defs><!-- Outer circle --><circle cx="16" cy="16" r="15" stroke="url(#lg1)" stroke-width="1.5" fill="rgba(0,200,180,0.08)"/><!-- L shape stylised --><path d="M10 9 L10 22 L22 22" stroke="url(#lg2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><!-- Pay signal arcs --><path d="M18 13 Q21 16 18 19" stroke="url(#lg1)" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.9"/><!-- Glow dot --><circle cx="10" cy="9" r="2" fill="url(#lg2)"/><circle cx="10" cy="22" r="1.5" fill="url(#lg1)" opacity="0.7"/></svg><div><div class="logo">LumiPay</div><span class="logo-sub">Secure Payments</span></div></div>
+    <div class="avatar-chip" onclick="handleAvatarClick()" title="Tap to sign out">
+      <div class="avatar">JL</div>
+      <span class="avatar-name">Jamie L.</span>
+    </div>
+  </div>
+
+  <!-- Balance Card -->
+  <div class="balance-card">
+    <div class="balance-label">Available Balance</div>
+    <div class="balance-row">
+      <div class="balance-amount"><sup id="balSymbol">₹</sup><span id="balVal">4,02,500</span></div>
+      <div class="currency-btn" onclick="openModal('my')">
+        <span class="currency-flag" id="balFlag">🇮🇳</span>
+        <span class="currency-code" id="balCode">INR</span>
+        <span class="currency-arrow">▾</span>
+      </div>
+    </div>
+    <div class="balance-sub">
+      <span class="badge-up" id="weekBadge">↑ +₹28,400 this week</span>
+      <span>· Updated 2m ago</span>
+    </div>
+    <div class="id-token">
+      <div>
+        <div class="id-token-label">Your Digital ID Token</div>
+        <div class="id-token-val">LUMI-J4L8-X2M9</div>
+      </div>
+      <div class="id-pulse"></div>
+    </div>
+  </div>
+
+  <!-- Transfer Methods -->
+  <div class="section-title">Transfer Method</div>
+  <div class="methods-grid">
+    <div class="method-card active" onclick="selectMethod(this,'prox')">
+      <div class="method-icon prox">📍</div>
+      <div class="method-name">Proximity</div>
+      <div class="method-desc">Ultra-wideband spatial detection</div>
+      <span class="method-tag tag-prox">UWB · BLE</span>
+    </div>
+    <div class="method-card" onclick="selectMethod(this,'nfc')">
+      <div class="method-icon nfc">📡</div>
+      <div class="method-name">NFC Tap</div>
+      <div class="method-desc">Contactless device-to-device</div>
+      <span class="method-tag tag-nfc">ISO 14443</span>
+    </div>
+    <div class="method-card" onclick="selectMethod(this,'face')">
+      <div class="method-icon face">👤</div>
+      <div class="method-name">Face Auth</div>
+      <div class="method-desc">3D mesh biometric verification</div>
+      <span class="method-tag tag-face">FaceID · Liveness</span>
+    </div>
+    <div class="method-card" onclick="selectMethod(this,'token')">
+      <div class="method-icon token">🔑</div>
+      <div class="method-name">ID Token</div>
+      <div class="method-desc">Ephemeral cryptographic token</div>
+      <span class="method-tag tag-token">ECDH · AES-256</span>
+    </div>
+  </div>
+
+  <!-- Transfer Panel -->
+  <div class="transfer-panel">
+    <div class="transfer-panel-title">
+      Send Payment
+      <span class="panel-badge" id="activeBadge">Proximity</span>
+    </div>
+
+    <!-- Currency selector row -->
+    <div class="currency-row">
+      <div class="cur-side">
+        <div class="cur-side-label">You send</div>
+        <div class="cur-picker" onclick="openModal('my')">
+          <span class="cur-picker-flag" id="sendFlag">🇮🇳</span>
+          <div>
+            <div class="cur-picker-code" id="sendCode">INR</div>
+            <div class="cur-picker-name" id="sendName">Indian Rupee</div>
+          </div>
+        </div>
+      </div>
+      <div class="cur-arrow-mid" id="midArrow">→</div>
+      <div class="cur-side">
+        <div class="cur-side-label">They receive</div>
+        <div class="cur-picker" onclick="openModal('recv')">
+          <span class="cur-picker-flag" id="recvFlag">🇮🇳</span>
+          <div>
+            <div class="cur-picker-code" id="recvCode">INR</div>
+            <div class="cur-picker-name" id="recvName">Indian Rupee</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cross-currency notice -->
+    <div class="cross-badge" id="crossBadge">
+      <span class="cross-tag">⚡ Cross-currency transfer · 1.2% tariff applies</span>
+    </div>
+
+    <!-- Proximity visualiser -->
+    <div class="proximity-vis">
+      <div class="prox-ring"></div><div class="prox-ring"></div>
+      <div class="prox-ring"></div><div class="prox-ring"></div>
+      <div class="prox-center">📍</div>
+    </div>
+
+    <!-- Amount -->
+    <div class="amount-input-wrap">
+      <input class="amount-display" type="text" id="amountDisplay" value="₹0" readonly>
+    </div>
+    <div class="amount-hint">Tap numbers to enter amount</div>
+
+    <!-- Tariff breakdown (shown when cross-currency + amount > 0) -->
+    <div class="tariff-box" id="tariffBox">
+      <div class="tariff-title">⚡ Cross-Currency Breakdown</div>
+      <div class="tariff-row"><span class="tariff-label">Amount sent</span><span class="tariff-val" id="tSent">—</span></div>
+      <div class="tariff-row"><span class="tariff-label">Exchange rate</span><span class="tariff-val" id="tRate">—</span></div>
+      <div class="tariff-row"><span class="tariff-label">Tariff (1.2%)</span><span class="tariff-val red" id="tTariff">—</span></div>
+      <div class="tariff-row total"><span class="tariff-label">Recipient gets</span><span class="tariff-val green" id="tRecv">—</span></div>
+    </div>
+
+    <!-- Numpad -->
+    <div class="numpad">
+      <button class="num-btn" onclick="numPress('1')">1</button>
+      <button class="num-btn" onclick="numPress('2')">2</button>
+      <button class="num-btn" onclick="numPress('3')">3</button>
+      <button class="num-btn" onclick="numPress('4')">4</button>
+      <button class="num-btn" onclick="numPress('5')">5</button>
+      <button class="num-btn" onclick="numPress('6')">6</button>
+      <button class="num-btn" onclick="numPress('7')">7</button>
+      <button class="num-btn" onclick="numPress('8')">8</button>
+      <button class="num-btn" onclick="numPress('9')">9</button>
+      <button class="num-btn" onclick="numPress('.')">.</button>
+      <button class="num-btn" onclick="numPress('0')">0</button>
+      <button class="num-btn del" onclick="numDel()">⌫</button>
+    </div>
+
+    <button class="cta-btn" onclick="initiateTransfer()" id="ctaBtn">
+      Scan Nearby Devices →
+    </button>
+  </div>
+
+  <!-- Recent Transfers -->
+  <div class="section-title">Recent Transfers</div>
+  <div class="txn-list" id="txnList"></div>
+
+  <!-- Security Bar -->
+  <div class="security-bar">
+    <span class="sec-dot"></span>
+    End-to-End Encrypted · Zero-Knowledge Proofs · FIPS 140-3
+  </div>
+</div>
+
+<!-- Recipient Modal -->
+<div class="recip-modal" id="recipModal">
+  <div class="recip-sheet">
+    <div class="recip-handle"></div>
+    <div class="recip-title">Send to</div>
+    <div class="recip-sub" id="recipSubtitle">Choose a recipient for your transfer</div>
+    <input class="recip-search" id="recipSearch" placeholder="Search by name or ID…" oninput="filterRecipients()">
+    <div class="recip-list" id="recipList"></div>
+    <button class="recip-confirm-btn" id="recipConfirmBtn" onclick="confirmRecipient()" disabled>Confirm Recipient →</button>
+    <button class="recip-cancel" onclick="closeRecipModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+const CURRENCIES = [
+  {code:'INR',name:'Indian Rupee',     flag:'🇮🇳',symbol:'₹',  r:1},
+  {code:'USD',name:'US Dollar',        flag:'🇺🇸',symbol:'$',  r:83.50},
+  {code:'EUR',name:'Euro',             flag:'🇪🇺',symbol:'€',  r:91.20},
+  {code:'GBP',name:'British Pound',    flag:'🇬🇧',symbol:'£',  r:106.80},
+  {code:'JPY',name:'Japanese Yen',     flag:'🇯🇵',symbol:'¥',  r:0.56},
+  {code:'AED',name:'UAE Dirham',       flag:'🇦🇪',symbol:'د.إ',r:22.72},
+  {code:'SGD',name:'Singapore Dollar', flag:'🇸🇬',symbol:'S$', r:62.40},
+  {code:'AUD',name:'Australian Dollar',flag:'🇦🇺',symbol:'A$', r:55.30},
+  {code:'CAD',name:'Canadian Dollar',  flag:'🇨🇦',symbol:'C$', r:61.90},
+  {code:'CHF',name:'Swiss Franc',      flag:'🇨🇭',symbol:'Fr', r:95.20},
+  {code:'CNY',name:'Chinese Yuan',     flag:'🇨🇳',symbol:'¥',  r:11.52},
+  {code:'MYR',name:'Malaysian Ringgit',flag:'🇲🇾',symbol:'RM', r:18.80},
+  {code:'THB',name:'Thai Baht',        flag:'🇹🇭',symbol:'฿',  r:2.34},
+  {code:'SAR',name:'Saudi Riyal',      flag:'🇸🇦',symbol:'﷼',  r:22.25},
+  {code:'BRL',name:'Brazilian Real',   flag:'🇧🇷',symbol:'R$', r:16.70},
+  {code:'ZAR',name:'S. African Rand',  flag:'🇿🇦',symbol:'R',  r:4.58},
+  {code:'KRW',name:'South Korean Won', flag:'🇰🇷',symbol:'₩',  r:0.063},
+  {code:'MXN',name:'Mexican Peso',     flag:'🇲🇽',symbol:'$',  r:4.85},
+  {code:'NZD',name:'New Zealand Dollar',flag:'🇳🇿',symbol:'$', r:51.20},
+  {code:'HKD',name:'Hong Kong Dollar', flag:'🇭🇰',symbol:'$',  r:10.68},
+];
+const TARIFF = 0.012;
+
+/* ── State ── */
+let myCur   = CURRENCIES[0];
+let recvCur = CURRENCIES[0];
+let modalTarget = 'my';
+let amountStr   = '';
+let currentMethod = 'prox';
+let balanceINR = 402500; // master balance always in INR
+
+/* ── Contacts / Recipients ── */
+const CONTACTS = [
+  {id:'LUMI-L9P2',name:'Likitha M',   emoji:'🌺',bg:'rgba(0,200,180,0.15)', color:'#00c8b4'},
+  {id:'LUMI-R4C8',name:'Rakshitha V', emoji:'✨',bg:'rgba(127,255,212,0.12)',color:'#7fffd4'},
+  {id:'LUMI-M3G7',name:'Mithun G',    emoji:'⚡',bg:'rgba(0,240,200,0.12)', color:'#00f0c8'},
+  {id:'LUMI-V6K1',name:'Vinay K',     emoji:'🎯',bg:'rgba(0,168,150,0.15)', color:'#00a896'},
+  {id:'LUMI-A2G5',name:'Adrija G',    emoji:'🎨',bg:'rgba(255,180,0,0.10)', color:'#ffb400'},
+  {id:'LUMI-H8K3',name:'Hansini K',   emoji:'🌸',bg:'rgba(0,200,180,0.12)', color:'#00c8b4'},
+  {id:'LUMI-T5M9',name:'Tarun M',     emoji:'🏄',bg:'rgba(0,239,216,0.10)', color:'#00efd8'},
+  {id:'LUMI-V1B6',name:'Vikas B',     emoji:'🚀',bg:'rgba(0,168,150,0.12)', color:'#00a896'},
+];
+let selectedRecipient = null;
+
+/* ── Transactions ── */
+const transactions = [
+  {name:'Likitha M',  emoji:'🌺', bg:'rgba(0,200,180,0.15)',  color:'#00c8b4',
+   method:'Proximity · 0.3m', amountINR:3750, fromCur:'INR', toCur:'INR', time:'14:22', tariff:0},
+  {name:'Mithun G',   emoji:'⚡', bg:'rgba(0,240,200,0.12)',  color:'#00f0c8',
+   method:'NFC Tap', amountINR:10020, fromCur:'INR', toCur:'USD', time:'11:05', tariff:120.24},
+  {name:'Adrija G',   emoji:'🎨', bg:'rgba(255,180,0,0.10)',  color:'#ffb400',
+   method:'Token · LUMI-K9P2', amountINR:1540, fromCur:'INR', toCur:'INR', time:'09:48', tariff:0},
+  {name:'Tarun M',    emoji:'🏄', bg:'rgba(0,239,216,0.10)',  color:'#00efd8',
+   method:'Face Auth', amountINR:2920, fromCur:'INR', toCur:'GBP', time:'Yday', tariff:35.04},
+];
+
+function getCur(code){ return CURRENCIES.find(c=>c.code===code); }
+function getRate(from,to){ return from.r / to.r; }
+
+function fmt(val, cur){
+  if(cur.code==='INR'){
+    return cur.symbol + val.toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2});
+  }
+  return cur.symbol + val.toLocaleString('en-US',{maximumFractionDigits:2,minimumFractionDigits:2});
+}
+
+function isCross(){ return myCur.code !== recvCur.code; }
+
+/* ── UI update ── */
+function updateAll(){
+  document.getElementById('balFlag').textContent = myCur.flag;
+  document.getElementById('balCode').textContent = myCur.code;
+  document.getElementById('balSymbol').textContent = myCur.symbol;
+  // Convert master INR balance to display currency
+  const bal = balanceINR / myCur.r;
+  document.getElementById('balVal').textContent = bal >= 1000
+    ? bal.toLocaleString(myCur.code==='INR'?'en-IN':'en-US',{maximumFractionDigits:0})
+    : bal.toFixed(2);
+  document.getElementById('weekBadge').textContent =
+    '↑ +' + fmt(28400/myCur.r, myCur) + ' this week';
+
+  document.getElementById('sendFlag').textContent = myCur.flag;
+  document.getElementById('sendCode').textContent = myCur.code;
+  document.getElementById('sendName').textContent = myCur.name;
+  document.getElementById('recvFlag').textContent = recvCur.flag;
+  document.getElementById('recvCode').textContent = recvCur.code;
+  document.getElementById('recvName').textContent = recvCur.name;
+
+  const cross = isCross();
+  document.getElementById('midArrow').className = 'cur-arrow-mid' + (cross?' cross':'');
+  document.getElementById('crossBadge').className = 'cross-badge' + (cross?' show':'');
+
+  updateDisplay();
+  updateTariff();
+  renderTxns();
+}
+
+/* ── Render transactions ── */
+function renderTxns(){
+  const list = document.getElementById('txnList');
+  if(!transactions.length){ list.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px;">No transactions yet</div>'; return; }
+  list.innerHTML = transactions.map(t=>{
+    // Display amount in current currency
+    const dispAmt = (t.amountINR / myCur.r);
+    const dispFmt = myCur.symbol + dispAmt.toLocaleString(myCur.code==='INR'?'en-IN':'en-US',{maximumFractionDigits:2,minimumFractionDigits:2});
+    const tariffFmt = t.tariff>0 ? `<div class="txn-tariff">tariff −${myCur.symbol}${(t.tariff/myCur.r).toFixed(2)}</div>` : '';
+    const crossLabel = (t.fromCur!==t.toCur) ? ` · ${t.fromCur} → ${t.toCur}` : '';
+    return `<div class="txn-item">
+      <div class="txn-avatar" style="background:${t.bg}">${t.emoji}</div>
+      <div class="txn-info">
+        <div class="txn-name">${t.name}</div>
+        <div class="txn-method"><span class="txn-dot" style="background:${t.color}"></span>${t.method}${crossLabel}</div>
+      </div>
+      <div class="txn-amount">
+        <div class="txn-val out">−${dispFmt}</div>
+        ${tariffFmt}
+        <div class="txn-time">${t.time}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateDisplay(){
+  const el = document.getElementById('amountDisplay');
+  el.value = myCur.symbol + (amountStr || '0');
+}
+
+function updateTariff(){
+  const box = document.getElementById('tariffBox');
+  const amount = parseFloat(amountStr)||0;
+  if(!isCross() || amount===0){ box.classList.remove('show'); return; }
+  box.classList.add('show');
+  const rate     = getRate(myCur, recvCur);
+  const conv     = amount * rate;
+  const tariff   = conv * TARIFF;
+  const net      = conv - tariff;
+  document.getElementById('tSent').textContent   = fmt(amount, myCur);
+  document.getElementById('tRate').textContent   = `1 ${myCur.code} = ${rate.toFixed(4)} ${recvCur.code}`;
+  document.getElementById('tTariff').textContent = '−' + fmt(tariff, recvCur);
+  document.getElementById('tRecv').textContent   = fmt(net, recvCur);
+}
+
+/* ── Numpad ── */
+function numPress(v){
+  if(v==='.' && amountStr.includes('.')) return;
+  if(amountStr.length>=9) return;
+  amountStr += v;
+  updateDisplay(); updateTariff();
+}
+function numDel(){
+  amountStr=amountStr.slice(0,-1);
+  updateDisplay(); updateTariff();
+}
+
+/* ── Method ── */
+function selectMethod(card,method){
+  document.querySelectorAll('.method-card').forEach(c=>c.classList.remove('active'));
+  card.classList.add('active');
+  currentMethod=method;
+  const names={prox:'Proximity',nfc:'NFC Tap',face:'Face Auth',token:'ID Token'};
+  const ctas={prox:'Scan Nearby Devices →',nfc:'Tap to Transfer →',face:'Authenticate & Send →',token:'Generate Token →'};
+  document.getElementById('activeBadge').textContent=names[method];
+  document.getElementById('ctaBtn').textContent=ctas[method];
+}
+
+/* ── Recipient modal ── */
+let pendingTransferMethod = null;
+
+let filteredContacts = [...CONTACTS];
+
+function openRecipModal(method){
+  pendingTransferMethod = method;
+  selectedRecipient = null;
+  filteredContacts = [...CONTACTS];
+  document.getElementById('recipSearch').value = '';
+  document.getElementById('recipConfirmBtn').disabled = true;
+  const amount = parseFloat(amountStr)||0;
+  document.getElementById('recipSubtitle').textContent =
+    `Sending ${fmt(amount, myCur)} — choose a recipient`;
+  renderRecipList();
+  document.getElementById('recipModal').classList.add('show');
+}
+
+function closeRecipModal(){
+  document.getElementById('recipModal').classList.remove('show');
+}
+
+function filterRecipients(){
+  const q = document.getElementById('recipSearch').value.toLowerCase();
+  filteredContacts = CONTACTS.filter(c=>c.name.toLowerCase().includes(q)||c.id.toLowerCase().includes(q));
+  renderRecipList();
+}
+
+function renderRecipList(){
+  document.getElementById('recipList').innerHTML = filteredContacts.map(c=>`
+    <div class="recip-item${selectedRecipient&&selectedRecipient.id===c.id?' selected':''}" onclick="selectRecipient('${c.id}')">
+      <div class="recip-avatar" style="background:${c.bg}">${c.emoji}</div>
+      <div class="recip-info">
+        <div class="recip-name">${c.name}</div>
+        <div class="recip-id">${c.id}</div>
+      </div>
+      ${selectedRecipient&&selectedRecipient.id===c.id?'<div class="recip-check">✓</div>':''}
+    </div>`).join('');
+}
+
+function selectRecipient(id){
+  selectedRecipient = CONTACTS.find(c=>c.id===id);
+  document.getElementById('recipConfirmBtn').disabled = false;
+  renderRecipList();
+}
+
+async function confirmRecipient(){
+  if(!selectedRecipient) return;
+  closeRecipModal();
+
+  // Ask for PIN first
+  const pinOk = await openPinModal();
+  if(!pinOk){
+    showToast('❌ Transaction cancelled — incorrect PIN');
+    return;
+  }
+
+  const method = pendingTransferMethod;
+  if(method==='nfc')        startNFCTransfer();
+  else if(method==='face')  startFaceScan();
+  else if(method==='token') startToken();
+  else {
+    showToast('📍 Scanning nearby…');
+    setTimeout(()=>{ completeTransfer(); }, 2400);
+  }
+}
+
+function buildMsg(){
+  const amount=parseFloat(amountStr)||0;
+  const name = selectedRecipient ? selectedRecipient.name : 'recipient';
+  if(!isCross()) return `✓ Sent ${fmt(amount,myCur)} to ${name}`;
+  const rate=getRate(myCur,recvCur);
+  const net=(amount*rate)*(1-TARIFF);
+  return `✓ ${fmt(amount,myCur)} → ${fmt(net,recvCur)} sent to ${name}`;
+}
+
+/* ── Success Popup ── */
+function showSuccessPopup(amountFmt, recipientName, method){
+  const now = new Date();
+  const timeStr = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('successAmount').textContent = amountFmt;
+  document.getElementById('successRecipient').textContent = recipientName;
+  document.getElementById('successMethod').textContent = method;
+  document.getElementById('successTime').textContent = timeStr;
+  // Cross-currency subtitle
+  const subtitle = isCross()
+    ? `Converted & sent securely via LumiPay`
+    : `Sent securely via LumiPay`;
+  document.getElementById('successSubtitle').textContent = subtitle;
+  document.getElementById('successOverlay').classList.add('show');
+}
+function closeSuccessPopup(){
+  document.getElementById('successOverlay').classList.remove('show');
+}
+
+function completeTransfer(){
+  const amount = parseFloat(amountStr)||0;
+  if(amount<=0) return;
+  const amountINR = amount * myCur.r;
+  if(amountINR > balanceINR){ showToast('⚠ Insufficient balance'); return; }
+  balanceINR -= amountINR;
+
+  const isCrossCur = isCross();
+  const tariffAmt = isCrossCur ? (amount * getRate(myCur,recvCur) * TARIFF * recvCur.r / myCur.r) : 0;
+
+  const now = new Date();
+  const timeStr = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  const methodName = {prox:'Proximity',nfc:'NFC Tap',face:'Face Auth',token:'ID Token'}[currentMethod]||'Proximity';
+  const recipName = selectedRecipient ? selectedRecipient.name : 'Unknown';
+
+  transactions.unshift({
+    name: recipName,
+    emoji: selectedRecipient ? selectedRecipient.emoji : '💸',
+    bg: selectedRecipient ? selectedRecipient.bg : 'rgba(0,200,180,0.15)',
+    color: selectedRecipient ? selectedRecipient.color : '#00c8b4',
+    method: methodName,
+    amountINR: amountINR,
+    fromCur: myCur.code,
+    toCur: recvCur.code,
+    time: timeStr,
+    tariff: tariffAmt,
+  });
+
+  const amountFmt = fmt(amount, myCur);
+  amountStr = '';
+  updateAll();
+  showSuccessPopup(amountFmt, recipName, methodName);
+}
+
+/* ── Transfer ── */
+function initiateTransfer(){
+  const amount=parseFloat(amountStr)||0;
+  if(amount<=0){ showToast('⚠ Enter an amount first'); return; }
+  const amountINR = amount * myCur.r;
+  if(amountINR > balanceINR){ showToast('⚠ Insufficient balance'); return; }
+  openRecipModal(currentMethod);
+}
+
+let cameraStream = null;
+let faceIv = null;
+let detectLoop = null;
+let faceDetector = null;
+// Hidden canvas used to grab frames for FaceDetector
+const snapCanvas = document.createElement('canvas');
+const snapCtx    = snapCanvas.getContext('2d');
+
+async function startFaceScan(){
+  const overlay  = document.getElementById('faceOverlay');
+  const pill     = document.getElementById('camStatusPill');
+  const oval     = document.getElementById('camOval');
+
+  // Reset state
+  overlay.classList.add('show');
+  document.getElementById('camDenied').classList.remove('show');
+  document.getElementById('camHeader').style.display  = '';
+  document.getElementById('camOvalWrap').style.display= '';
+  document.getElementById('camUI').style.display      = '';
+  pill.textContent  = 'Position your face in the oval';
+  pill.className    = 'cam-status-pill';
+  oval.style.borderColor = '';
+  oval.style.boxShadow   = '';
+  clearTimeout(faceIv);
+  cancelAnimationFrame(detectLoop);
+
+  // Init FaceDetector once
+  if(!faceDetector){
+    if(!('FaceDetector' in window)){
+      // FaceDetector not supported — fall back gracefully
+      faceDetector = null;
+    } else {
+      try { faceDetector = new FaceDetector({ fastMode: true, maxDetectedFaces: 1 }); }
+      catch(e){ faceDetector = null; }
+    }
+  }
+
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:'user', width:{ideal:1280}, height:{ideal:720} },
+      audio: false
+    });
+    const video = document.getElementById('cameraVideo');
+    video.srcObject = cameraStream;
+    await video.play();
+
+    // Start the face-detection polling loop
+    startDetectionLoop(video);
+
+  } catch(err){
+    document.getElementById('camHeader').style.display  = 'none';
+    document.getElementById('camOvalWrap').style.display= 'none';
+    document.getElementById('camUI').style.display      = 'none';
+    document.getElementById('camDenied').classList.add('show');
+  }
+}
+
+/* ── Continuous face-detection loop ── */
+function startDetectionLoop(video){
+  const pill        = document.getElementById('camStatusPill');
+  const oval        = document.getElementById('camOval');
+  const ovalWrap    = document.getElementById('camOvalWrap');
+  const confBar     = document.getElementById('camConfBar');
+  const faceBadge   = document.getElementById('camFaceBadge');
+  const trackCanvas = document.getElementById('faceTrackCanvas');
+  const trackCtx    = trackCanvas.getContext('2d');
+
+  const POLL_MS      = 350;
+  const CONFIRM_NEED = 3;
+  const TIMEOUT_MS   = 10000;
+
+  let consecutiveHits = 0;
+  let authStarted     = false;
+  let noFaceTimer     = null;
+  let pollIv          = null;
+  let confidence      = 0;
+
+  noFaceTimer = setTimeout(() => {
+    if(!authStarted){ stopDetectionLoop(); showRejection('No face detected. Please try again.'); }
+  }, TIMEOUT_MS);
+
+  function resizeTrackCanvas(){
+    trackCanvas.width  = trackCanvas.offsetWidth  || window.innerWidth;
+    trackCanvas.height = trackCanvas.offsetHeight || window.innerHeight;
+  }
+  resizeTrackCanvas();
+  window.addEventListener('resize', resizeTrackCanvas);
+
+  function drawFaceBox(face, scaleX, scaleY){
+    resizeTrackCanvas();
+    trackCtx.clearRect(0, 0, trackCanvas.width, trackCanvas.height);
+
+    if(!face) return;
+
+    const b = face.boundingBox;
+    // Map from video coords to screen coords
+    // Note: video is mirrored via CSS scaleX(-1), canvas is also mirrored — so x is flipped
+    const vw = video.videoWidth  || 1;
+    const vh = video.videoHeight || 1;
+    const cw = trackCanvas.width;
+    const ch = trackCanvas.height;
+
+    // Compute scaled rect (video may be letterboxed — cover fit)
+    const videoAspect  = vw / vh;
+    const canvasAspect = cw / ch;
+    let drawW, drawH, offX, offY;
+    if(videoAspect > canvasAspect){
+      drawH = ch; drawW = ch * videoAspect;
+    } else {
+      drawW = cw; drawH = cw / videoAspect;
+    }
+    offX = (cw - drawW) / 2;
+    offY = (ch - drawH) / 2;
+
+    const sx = drawW / vw;
+    const sy = drawH / vh;
+
+    // Mirror the x coordinate (because CSS mirrors the video)
+    const rx = cw - (offX + b.x * sx) - b.width * sx;
+    const ry = offY + b.y * sy;
+    const rw = b.width  * sx;
+    const rh = b.height * sy;
+
+    // Draw corner brackets around detected face
+    const cornerLen = Math.min(rw, rh) * 0.18;
+    const pad = 12;
+    trackCtx.strokeStyle = 'rgba(0,240,200,0.85)';
+    trackCtx.lineWidth   = 2.5;
+    trackCtx.lineCap     = 'round';
+
+    const drawCorner = (x, y, dx, dy) => {
+      trackCtx.beginPath();
+      trackCtx.moveTo(x + dx * cornerLen, y);
+      trackCtx.lineTo(x, y);
+      trackCtx.lineTo(x, y + dy * cornerLen);
+      trackCtx.stroke();
+    };
+    drawCorner(rx - pad,      ry - pad,       1,  1);
+    drawCorner(rx + rw + pad, ry - pad,      -1,  1);
+    drawCorner(rx - pad,      ry + rh + pad,  1, -1);
+    drawCorner(rx + rw + pad, ry + rh + pad, -1, -1);
+
+    // Subtle glow rect
+    trackCtx.strokeStyle = 'rgba(0,240,200,0.15)';
+    trackCtx.lineWidth   = 1;
+    trackCtx.strokeRect(rx - pad, ry - pad, rw + pad*2, rh + pad*2);
+
+    // Draw landmark dots if available
+    if(face.landmarks){
+      face.landmarks.forEach(lm => {
+        const lx = cw - (offX + lm.location.x * sx);
+        const ly = offY + lm.location.y * sy;
+        trackCtx.beginPath();
+        trackCtx.arc(lx, ly, 3, 0, Math.PI*2);
+        trackCtx.fillStyle = 'rgba(0,200,180,0.9)';
+        trackCtx.fill();
+      });
+    }
+  }
+
+  const detect = async () => {
+    if(authStarted) return;
+    if(video.readyState < 2) return;
+
+    snapCanvas.width  = video.videoWidth  || 320;
+    snapCanvas.height = video.videoHeight || 240;
+    snapCtx.drawImage(video, 0, 0, snapCanvas.width, snapCanvas.height);
+
+    let faceFound = false;
+    let detectedFace = null;
+
+    if(faceDetector){
+      try{
+        const faces = await faceDetector.detect(snapCanvas);
+        faceFound    = faces.length > 0;
+        detectedFace = faceFound ? faces[0] : null;
+      } catch(e){ faceFound = false; }
+    } else {
+      faceFound = hasSkinTonePixels(snapCtx, snapCanvas.width, snapCanvas.height);
+    }
+
+    if(faceFound){
+      consecutiveHits++;
+      confidence = Math.min(100, confidence + 28);
+      confBar.style.width = confidence + '%';
+
+      // Update badge
+      faceBadge.textContent = '👤 Face Detected';
+      faceBadge.className   = 'cam-face-badge detected';
+
+      // Draw bounding box
+      drawFaceBox(detectedFace);
+
+      if(consecutiveHits < CONFIRM_NEED){
+        pill.textContent = `Face locked — confirming… (${consecutiveHits}/${CONFIRM_NEED})`;
+        oval.style.borderColor = 'rgba(0,240,200,0.6)';
+      } else if(!authStarted){
+        authStarted = true;
+        clearTimeout(noFaceTimer);
+        clearInterval(pollIv);
+        confBar.style.width = '100%';
+        runBiometricSequence(oval, pill, trackCtx, trackCanvas);
+      }
+    } else {
+      consecutiveHits = Math.max(0, consecutiveHits - 1);
+      confidence      = Math.max(0, confidence - 15);
+      confBar.style.width = confidence + '%';
+
+      faceBadge.textContent = '👤 Searching…';
+      faceBadge.className   = 'cam-face-badge';
+
+      trackCtx.clearRect(0, 0, trackCanvas.width, trackCanvas.height);
+      pill.textContent       = 'Look directly at the camera';
+      pill.className         = 'cam-status-pill';
+      oval.style.borderColor = '';
+    }
+  };
+
+  pollIv = setInterval(detect, POLL_MS);
+  detectLoop = { stop: () => { clearInterval(pollIv); clearTimeout(noFaceTimer); window.removeEventListener('resize', resizeTrackCanvas); } };
+}
+
+function stopDetectionLoop(){
+  if(detectLoop){ detectLoop.stop(); detectLoop = null; }
+}
+
+/* Simple skin-tone pixel heuristic fallback when FaceDetector is absent */
+function hasSkinTonePixels(ctx, w, h){
+  try{
+    const data = ctx.getImageData(Math.floor(w*0.25), Math.floor(h*0.1),
+                                  Math.floor(w*0.5),  Math.floor(h*0.8)).data;
+    let skinCount = 0;
+    for(let i=0;i<data.length;i+=16){ // sample every 4th pixel
+      const r=data[i], g=data[i+1], b=data[i+2];
+      // Rough skin-tone range check
+      if(r>80 && g>40 && b>20 && r>g && r>b && (r-g)>10){
+        skinCount++;
+      }
+    }
+    return skinCount > 200; // needs enough skin-tone pixels
+  } catch(e){ return false; }
+}
+
+/* ── Biometric auth sequence (runs after face is confirmed) ── */
+function runBiometricSequence(oval, pill, trackCtx, trackCanvas){
+  const steps = [
+    {msg:'Face locked — mapping geometry…', delay:1100},
+    {msg:'Scanning 3D mesh points…',        delay:1300},
+    {msg:'Liveness detection…',             delay:1200},
+    {msg:'Verifying biometrics…',           delay:1000},
+    {msg:'✓ Identity Confirmed',            delay:900, success:true},
+  ];
+  let i = 0;
+  const next = () => {
+    if(i >= steps.length){
+      if(trackCtx && trackCanvas) trackCtx.clearRect(0,0,trackCanvas.width,trackCanvas.height);
+      closeFaceOverlay();
+      completeTransfer();
+      return;
+    }
+    const step = steps[i++];
+    pill.textContent = step.msg;
+    if(step.success){
+      pill.className         = 'cam-status-pill success';
+      oval.style.borderColor = 'var(--accent2)';
+      oval.style.boxShadow   = '0 0 0 9999px rgba(2,13,14,0.6), 0 0 50px rgba(0,239,216,0.6)';
+      document.getElementById('camFaceBadge').textContent = '✓ Verified';
+      document.getElementById('camFaceBadge').className = 'cam-face-badge detected';
+    }
+    faceIv = setTimeout(next, step.delay);
+  };
+  next();
+}
+
+/* ── Rejection state ── */
+function showRejection(msg){
+  const pill = document.getElementById('camStatusPill');
+  const oval = document.getElementById('camOval');
+  pill.textContent       = '✗ ' + msg;
+  pill.className         = 'cam-status-pill rejected';
+  oval.style.borderColor = 'var(--accent3)';
+  oval.style.boxShadow   = '0 0 0 9999px rgba(2,13,14,0.6), 0 0 50px rgba(255,159,67,0.7)';
+  // Auto-close after 2.5 s so user can retry
+  faceIv = setTimeout(() => closeFaceOverlay(), 2500);
+}
+
+function closeFaceOverlay(){
+  stopDetectionLoop();
+  clearTimeout(faceIv);
+  if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; }
+  const video = document.getElementById('cameraVideo');
+  video.srcObject = null;
+  const oval = document.getElementById('camOval');
+  oval.style.borderColor = '';
+  oval.style.boxShadow   = '';
+  const tc = document.getElementById('faceTrackCanvas');
+  if(tc) tc.getContext('2d').clearRect(0,0,tc.width,tc.height);
+  document.getElementById('camFaceBadge').textContent = '👤 Searching…';
+  document.getElementById('camFaceBadge').className   = 'cam-face-badge';
+  document.getElementById('camConfBar').style.width   = '0%';
+  document.getElementById('faceOverlay').classList.remove('show');
+}
+
+function startToken(){
+  document.getElementById('tokenOverlay').classList.add('show');
+  let t=60;
+  document.getElementById('tokenTimer').textContent=t;
+  document.getElementById('tokenBig').textContent='LUMI-'+Math.random().toString(36).substr(2,4).toUpperCase();
+  const iv=setInterval(()=>{t--;document.getElementById('tokenTimer').textContent=t;if(t<=0){clearInterval(iv);closeOverlay('tokenOverlay');completeTransfer();}},1000);
+}
+
+// NFC Tap Pattern Authentication
+const SECRET_PATTERN = [0,1,2,5,8]; // secret: top-row then right column (user just needs ≥3 correct nodes in order)
+let tapSequence = [];
+let tapResolve = null;
+
+function startNFCTransfer(){
+  // First show the tap pattern screen
+  openTapPattern().then(ok=>{
+    if(!ok){ showToast('❌ Tap pattern failed — transfer cancelled'); return; }
+    // Pattern verified — now do NFC
+    document.getElementById('nfcOverlay').classList.add('show');
+    document.getElementById('nfcSubtitle').textContent = 'Tap another LumiPay device\nto initiate secure transfer';
+    setTimeout(()=>{
+      if(document.getElementById('nfcOverlay').classList.contains('show')){
+        document.getElementById('nfcSubtitle').textContent = '✓ Device detected · Transferring…';
+        setTimeout(()=>{ closeOverlay('nfcOverlay'); completeTransfer(); }, 1200);
+      }
+    },3000);
+  });
+}
+
+function openTapPattern(){
+  return new Promise(resolve=>{
+    tapResolve = resolve;
+    tapSequence = [];
+    renderTapGrid();
+    renderTapSvg();
+    document.getElementById('tapSeqDisplay').innerHTML='';
+    document.getElementById('tapHint').textContent='Tap nodes to build your pattern';
+    document.getElementById('tapErrMsg').textContent='';
+    document.getElementById('tapConfirmBtn').disabled=true;
+    document.getElementById('tapOverlay').classList.add('show');
+  });
+}
+
+function tapNode(idx){
+  if(tapSequence.includes(idx)) return; // can't tap same node twice
+  tapSequence.push(idx);
+  renderTapGrid();
+  renderTapSvg();
+  // Update sequence dots display
+  const disp = document.getElementById('tapSeqDisplay');
+  const dot = document.createElement('div');
+  dot.className='tap-seq-dot';
+  disp.appendChild(dot);
+  document.getElementById('tapErrMsg').textContent='';
+  document.getElementById('tapConfirmBtn').disabled = tapSequence.length < 3;
+  document.getElementById('tapHint').textContent = tapSequence.length<3
+    ? `${3-tapSequence.length} more node${3-tapSequence.length!==1?'s':''} needed`
+    : 'Pattern ready — tap Confirm';
+}
+
+function renderTapGrid(){
+  document.querySelectorAll('.tap-node').forEach((node,i)=>{
+    const seqIdx = tapSequence.indexOf(i);
+    if(seqIdx>=0){
+      node.classList.add('tapped');
+      node.setAttribute('data-seq', seqIdx+1);
+    } else {
+      node.classList.remove('tapped');
+      node.removeAttribute('data-seq');
+    }
+  });
+}
+
+function renderTapSvg(){
+  const svg = document.getElementById('tapSvg');
+  svg.innerHTML='';
+  if(tapSequence.length<2) return;
+  // Node centers in 240x240 grid (3 cols, 3 rows, node ~68px with 14px gap)
+  // Each cell = (240 - 2*14) / 3 = ~70.6, center offset = 34
+  const nodeSize=68, gap=14, cols=3;
+  function center(idx){
+    const col=idx%cols, row=Math.floor(idx/cols);
+    const cellW=(240-(cols-1)*gap)/cols;
+    const x=col*(cellW+gap)+cellW/2;
+    const y=row*(cellW+gap)+cellW/2;
+    return {x,y};
+  }
+  for(let i=0;i<tapSequence.length-1;i++){
+    const a=center(tapSequence[i]), b=center(tapSequence[i+1]);
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',a.x); line.setAttribute('y1',a.y);
+    line.setAttribute('x2',b.x); line.setAttribute('y2',b.y);
+    line.setAttribute('stroke','rgba(0,239,216,0.5)');
+    line.setAttribute('stroke-width','2');
+    line.setAttribute('stroke-dasharray','5,3');
+    svg.appendChild(line);
+  }
+}
+
+function clearTapPattern(){
+  tapSequence=[];
+  renderTapGrid();
+  renderTapSvg();
+  document.getElementById('tapSeqDisplay').innerHTML='';
+  document.getElementById('tapHint').textContent='Tap nodes to build your pattern';
+  document.getElementById('tapConfirmBtn').disabled=true;
+  document.getElementById('tapErrMsg').textContent='';
+}
+
+function confirmTapPattern(){
+  if(tapSequence.length<3){ document.getElementById('tapErrMsg').textContent='Tap at least 3 nodes.'; return; }
+  // Validate: sequence must contain SECRET_PATTERN nodes in correct relative order
+  // For demo: any pattern with 3+ nodes is accepted (pattern is whatever user first set)
+  // Since this is a demo without a "set pattern" step, we accept any 3+ node pattern
+  // In a real app you'd compare against stored pattern
+  document.getElementById('tapOverlay').classList.remove('show');
+  if(tapResolve){ tapResolve(true); tapResolve=null; }
+}
+
+function cancelTapPattern(){
+  clearTapPattern();
+  document.getElementById('tapOverlay').classList.remove('show');
+  if(tapResolve){ tapResolve(false); tapResolve=null; }
+}
+
+function closeOverlay(id){
+  if(id==='faceOverlay'){ closeFaceOverlay(); return; }
+  document.getElementById(id).classList.remove('show');
+}
+
+let toastT;
+function showToast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),4000);
+}
+
+/* ── Modal ── */
+let filtered=[...CURRENCIES];
+function openModal(target){
+  modalTarget=target;
+  document.getElementById('modalTitle').textContent=target==='my'?'Your Currency':'Recipient\'s Currency';
+  document.getElementById('currencySearch').value='';
+  filtered=[...CURRENCIES];
+  renderList();
+  document.getElementById('currencyModal').classList.add('show');
+}
+function closeModal(){ document.getElementById('currencyModal').classList.remove('show'); }
+function handleModalBg(e){ if(e.target.id==='currencyModal') closeModal(); }
+function filterCurrencies(){
+  const q=document.getElementById('currencySearch').value.toLowerCase();
+  filtered=CURRENCIES.filter(c=>c.code.toLowerCase().includes(q)||c.name.toLowerCase().includes(q));
+  renderList();
+}
+function renderList(){
+  const active=modalTarget==='my'?myCur:recvCur;
+  document.getElementById('currencyList').innerHTML=filtered.map(c=>{
+    const rateStr=c.code==='INR'?'Base currency':`1 INR = ${(1/c.r).toFixed(4)} ${c.code}`;
+    return `<div class="cur-item${c.code===active.code?' selected':''}" onclick="selectCurrency('${c.code}')">
+      <div class="cur-item-flag">${c.flag}</div>
+      <div class="cur-item-info">
+        <div class="cur-item-code">${c.code}</div>
+        <div class="cur-item-name">${c.name}</div>
+      </div>
+      <div class="cur-item-rate">${rateStr}</div>
+      ${c.code===active.code?'<div class="cur-item-check">✓</div>':''}
+    </div>`;
+  }).join('');
+}
+function selectCurrency(code){
+  if(modalTarget==='my') myCur=getCur(code);
+  else recvCur=getCur(code);
+  closeModal();
+  updateAll();
+}
+
+/* ════════════════════════════════════════
+   AUTH LOGIC  —  localStorage backed
+════════════════════════════════════════ */
+const TRANSACTION_PIN = '1234';
+const LS_USERS   = 'lumipay_users';   // all registered accounts
+const LS_SESSION = 'lumipay_session'; // currently logged-in user
+
+/* ── Helpers ── */
+function loadUsers(){
+  try{ return JSON.parse(localStorage.getItem(LS_USERS)||'{}'); }
+  catch(e){ return {}; }
+}
+function saveUsers(u){ localStorage.setItem(LS_USERS, JSON.stringify(u)); }
+function saveSession(u){ localStorage.setItem(LS_SESSION, JSON.stringify(u)); }
+function loadSession(){
+  try{ return JSON.parse(localStorage.getItem(LS_SESSION)||'null'); }
+  catch(e){ return null; }
+}
+function clearSession(){ localStorage.removeItem(LS_SESSION); }
+
+let registeredUsers = loadUsers();
+let currentUser     = null;
+let generatedOTP    = '';
+let pendingRegPhone = '';
+let pendingRegPass  = '';
+let pendingRegName  = '';
+
+function switchAuthTab(tab){
+  document.getElementById('tabLogin').classList.toggle('active', tab==='login');
+  document.getElementById('tabRegister').classList.toggle('active', tab==='register');
+  document.getElementById('panelLogin').classList.toggle('active', tab==='login');
+  document.getElementById('panelRegister').classList.toggle('active', tab==='register');
+  document.getElementById('loginErr').textContent='';
+  document.getElementById('regErr1').textContent='';
+}
+
+function toggleEye(inputId, btn){
+  const inp = document.getElementById(inputId);
+  if(inp.type==='password'){ inp.type='text'; btn.textContent='🙈'; }
+  else{ inp.type='password'; btn.textContent='👁'; }
+}
+
+function shakeInput(id){
+  const el=document.getElementById(id);
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+  setTimeout(()=>el.classList.remove('shake'),400);
+}
+
+function doLogin(){
+  const phone = document.getElementById('loginPhone').value.trim();
+  const pass  = document.getElementById('loginPass').value;
+  const err   = document.getElementById('loginErr');
+  if(phone.length!==10){ err.textContent='Enter a valid 10-digit number.'; shakeInput('loginPhone'); return; }
+  if(!pass){ err.textContent='Password is required.'; shakeInput('loginPass'); return; }
+  registeredUsers = loadUsers();
+  if(!registeredUsers[phone]){ err.textContent='No account found. Please register.'; shakeInput('loginPhone'); return; }
+  if(registeredUsers[phone].pass!==pass){ err.textContent='Incorrect password. Try again.'; shakeInput('loginPass'); return; }
+  err.textContent='';
+  currentUser = {phone, name:registeredUsers[phone].name};
+  saveSession(currentUser);
+  enterApp(phone, registeredUsers[phone].name);
+}
+
+function sendOTP(){
+  const name  = document.getElementById('regName').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const pass  = document.getElementById('regPass').value;
+  const conf  = document.getElementById('regPassConf').value;
+  const err   = document.getElementById('regErr1');
+  if(name.length<2){ err.textContent='Please enter your full name.'; shakeInput('regName'); return; }
+  if(phone.length!==10){ err.textContent='Enter a valid 10-digit number.'; shakeInput('regPhone'); return; }
+  registeredUsers = loadUsers();
+  if(registeredUsers[phone]){ err.textContent='This number is already registered. Please login.'; shakeInput('regPhone'); return; }
+  if(pass.length<6){ err.textContent='Password must be at least 6 characters.'; shakeInput('regPass'); return; }
+  if(pass!==conf){ err.textContent='Passwords do not match.'; shakeInput('regPassConf'); return; }
+  err.textContent='';
+  pendingRegName=name; pendingRegPhone=phone; pendingRegPass=pass;
+  generatedOTP='123456';
+  document.getElementById('otpPhoneDisplay').textContent='+91 '+phone;
+  for(let i=0;i<6;i++) document.getElementById('otp'+i).value='';
+  document.getElementById('regErr2').textContent='';
+  document.getElementById('regStep1').classList.remove('active');
+  document.getElementById('regStep2').classList.add('active');
+  setTimeout(()=>document.getElementById('otp0').focus(),100);
+  showToast('📲 OTP sent to +91 '+phone+' (demo: 123456)');
+}
+
+function otpInput(el, idx){
+  el.value=el.value.replace(/\D/g,'').slice(0,1);
+  if(el.value && idx<5) document.getElementById('otp'+(idx+1)).focus();
+}
+
+function verifyOTP(){
+  const entered = [0,1,2,3,4,5].map(i=>document.getElementById('otp'+i).value).join('');
+  const err = document.getElementById('regErr2');
+  if(entered.length<6){ err.textContent='Please enter all 6 digits.'; return; }
+  if(entered!==generatedOTP){
+    err.textContent='Incorrect OTP. Try again.';
+    for(let i=0;i<6;i++){const d=document.getElementById('otp'+i);d.classList.add('shake');setTimeout(()=>d.classList.remove('shake'),400);}
+    return;
+  }
+  // Save new account to localStorage
+  registeredUsers = loadUsers();
+  registeredUsers[pendingRegPhone] = {pass:pendingRegPass, name:pendingRegName};
+  saveUsers(registeredUsers);
+  currentUser = {phone:pendingRegPhone, name:pendingRegName};
+  saveSession(currentUser);
+  enterApp(pendingRegPhone, pendingRegName);
+}
+
+function resendOTP(){
+  generatedOTP='123456';
+  showToast('📲 OTP resent (demo: 123456)');
+}
+
+function backToStep1(){
+  document.getElementById('regStep2').classList.remove('active');
+  document.getElementById('regStep1').classList.add('active');
+}
+
+function enterApp(phone, name){
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('appWrapper').style.display='';
+  const parts=(name||'').trim().split(' ');
+  const initials=parts.length>=2
+    ?(parts[0][0]+(parts[parts.length-1][0])).toUpperCase()
+    :(name||'?').slice(0,2).toUpperCase();
+  const av=document.querySelector('.avatar');
+  av.textContent=initials;
+  av.style.fontSize='13px';
+  document.querySelector('.avatar-name').textContent=name||('+91 ****'+phone.slice(-4));
+}
+
+function handleAvatarClick(){
+  if(!currentUser) return;
+  if(confirm('Sign out of LumiPay?')){
+    clearSession();
+    currentUser=null;
+    // Reset auth form
+    document.getElementById('loginPhone').value='';
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginErr').textContent='';
+    document.getElementById('regStep1').classList.add('active');
+    document.getElementById('regStep2').classList.remove('active');
+    switchAuthTab('login');
+    document.getElementById('appWrapper').style.display='none';
+    document.getElementById('authScreen').classList.remove('hidden');
+  }
+}
+
+/* ════════════════════════════════════════
+   PIN LOGIC
+════════════════════════════════════════ */
+let pinStr='';
+let pinResolve=null;
+
+function openPinModal(){
+  return new Promise(resolve=>{
+    pinResolve=resolve;
+    pinStr='';
+    updatePinDots();
+    document.getElementById('pinErrMsg').textContent='';
+    document.getElementById('pinOverlay').classList.add('show');
+  });
+}
+
+function pinPress(v){
+  if(pinStr.length>=4) return;
+  pinStr+=v;
+  updatePinDots();
+  if(pinStr.length===4) setTimeout(checkPin,120);
+}
+
+function pinDel(){
+  pinStr=pinStr.slice(0,-1);
+  updatePinDots();
+}
+
+function updatePinDots(){
+  for(let i=0;i<4;i++){
+    const d=document.getElementById('pd'+i);
+    d.classList.toggle('filled',i<pinStr.length);
+    d.classList.remove('err');
+  }
+}
+
+function checkPin(){
+  if(pinStr===TRANSACTION_PIN){
+    document.getElementById('pinOverlay').classList.remove('show');
+    if(pinResolve){ pinResolve(true); pinResolve=null; }
+  } else {
+    for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.add('err');
+    document.getElementById('pinErrMsg').textContent='Incorrect PIN. Transaction failed.';
+    setTimeout(()=>{
+      pinStr='';
+      updatePinDots();
+      document.getElementById('pinErrMsg').textContent='';
+    },1200);
+    setTimeout(()=>{
+      document.getElementById('pinOverlay').classList.remove('show');
+      if(pinResolve){ pinResolve(false); pinResolve=null; }
+    },1600);
+  }
+}
+
+function cancelPin(){
+  document.getElementById('pinOverlay').classList.remove('show');
+  if(pinResolve){ pinResolve(false); pinResolve=null; }
+}
+
+/* ── Init ── */
+// Build camera mesh dots
+const cm=document.getElementById('camMesh');
+for(let i=0;i<130;i++){const d=document.createElement('div');d.className='cam-mesh-dot';cm.appendChild(d);}
+updateAll();
+
+// Auto-login if session exists
+(function checkSession(){
+  const session = loadSession();
+  if(session && session.phone && session.name){
+    registeredUsers = loadUsers();
+    // Verify the session is still valid (account still exists)
+    if(registeredUsers[session.phone]){
+      currentUser = session;
+      enterApp(session.phone, session.name);
+      showToast('👋 Welcome back, '+session.name.split(' ')[0]+'!');
+    } else {
+      clearSession();
+    }
+  }
+})();
+</script>
+</body>
+</html>
